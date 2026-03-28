@@ -11,7 +11,7 @@ A `.wmz` file is a Windows Media Player skin — a ZIP archive containing a skin
 ### Where to find skins
 
 - [Wincustomize.com](https://www.wincustomize.com) — large archive, search "WMP skin"
-- [https://wmpskinsarchive.neocities.org) — my favourite
+- [Windows Media Player Skins Archive](https://wmpskinsarchive.neocities.org) — my favourite
 Download the `.wmz` file directly — do not unzip it yourself.
 
 ---
