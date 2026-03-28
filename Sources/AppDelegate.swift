@@ -12,7 +12,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         buildMenu()
         ActionLogger.shared.log("WMZ Renderer started")
-        openFile(nil)
+        let defaultSkin = URL(fileURLWithPath: #file)
+            .deletingLastPathComponent()          // Sources/
+            .deletingLastPathComponent()          // project root
+            .appendingPathComponent("Alienware_Darkstar_WMP11.wmz")
+        if FileManager.default.fileExists(atPath: defaultSkin.path) {
+            loadSkin(from: defaultSkin)
+        } else {
+            openFile(nil)
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
@@ -101,13 +109,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let win = NSWindow(
             contentRect: NSRect(origin: .zero, size: skinView.frame.size),
-            styleMask:   [.titled, .closable, .miniaturizable],
+            styleMask:   [],
             backing:     .buffered,
             defer:       false
         )
-        win.title = "WMZ Renderer"
         win.isOpaque = false
         win.backgroundColor = .clear
+        win.isMovableByWindowBackground = true
         win.contentView = skinView
         win.center()
         win.makeKeyAndOrderFront(nil)
@@ -119,7 +127,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func toggleMode(_ sender: Any?) {
         guard let win      = skinWindow,
               let skinView = win.contentView as? SkinView else { return }
-        let nowConfigure = skinView.toggleMode()
-        win.title = nowConfigure ? "WMZ Renderer — Configure" : "WMZ Renderer"
+        skinView.toggleMode()
     }
 }

@@ -268,6 +268,12 @@ final class SkinView: NSView {
         addSubview(label)
     }
 
+    // MARK: - Window Dragging
+
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
+    }
+
     // MARK: - Button / Slider Actions
 
     @objc private func buttonPressed(_ sender: NSButton) {
