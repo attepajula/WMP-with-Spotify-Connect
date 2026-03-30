@@ -66,4 +66,4 @@ The Alienware Darkstar skin is © 2005 Alienware Corporation, created by [TheSki
 
 Other WMP skin libraries (not used here, for reference):
 - [Wincustomize.com](https://www.wincustomize.com) — large community archive
-- [https://wmpskinsarchive.neocities.org](Windows Media Player Skins Archive) — personal favourite
+- [Windows Media Player Skins ](Archivehttps://wmpskinsarchive.neocities.org) — personal favourite
