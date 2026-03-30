@@ -54,6 +54,10 @@ struct WMSStandaloneButton {
     var downImage: String = ""
     var action: String = ""
     var tooltip: String = ""
+    /// Clip dimensions from the enclosing subview (0 = no clip, use image size).
+    var clipWidth: Int = 0
+    var clipHeight: Int = 0
+    var visible: Bool = true
 }
 
 struct WMSSlider {
@@ -98,11 +102,14 @@ final class WMSParser: NSObject, XMLParserDelegate {
     private var currentView: WMSView?
     private var currentGroup: WMSButtonGroup?
 
-    // Subview offset stack — each entry is the absolute (left, top) of the current subview.
-    // The bottom of the stack is (0, 0) for the view itself.
-    private var subviewStack: [(left: Int, top: Int)] = []
+    // Subview offset stack — each entry is the absolute (left, top) plus optional clip size.
+    // width/height are 0 when the subview doesn't declare them (no clipping).
+    private var subviewStack: [(left: Int, top: Int, width: Int, height: Int)] = []
     private var currentOffset: (left: Int, top: Int) {
-        subviewStack.last ?? (0, 0)
+        subviewStack.last.map { ($0.left, $0.top) } ?? (0, 0)
+    }
+    private var currentClip: (width: Int, height: Int) {
+        subviewStack.last.map { ($0.width, $0.height) } ?? (0, 0)
     }
 
     func parse(contentsOf url: URL) -> WMSSkin? {
@@ -134,12 +141,12 @@ final class WMSParser: NSObject, XMLParserDelegate {
         // ── View ──────────────────────────────────────────────────────────────
         case "VIEW":
             var v = WMSView()
-            v.id             = a["id"]     ?? ""
-            v.width          = Int(a["width"]  ?? "") ?? 0
-            v.height         = Int(a["height"] ?? "") ?? 0
+            v.id              = a["id"]     ?? ""
+            v.width           = Int(a["width"]  ?? "") ?? 0
+            v.height          = Int(a["height"] ?? "") ?? 0
             v.backgroundImage = a["backgroundimage"] ?? ""
-            currentView = v
-            subviewStack = []
+            currentView  = v
+            subviewStack = [(0, 0, v.width, v.height)]
 
         // ── Subview ───────────────────────────────────────────────────────────
         case "SUBVIEW":
@@ -147,7 +154,9 @@ final class WMSParser: NSObject, XMLParserDelegate {
             let top  = Int(a["top"]  ?? "") ?? 0
             let absLeft = currentOffset.left + left
             let absTop  = currentOffset.top  + top
-            subviewStack.append((absLeft, absTop))
+            let w = Int(a["width"]  ?? "") ?? 0
+            let h = Int(a["height"] ?? "") ?? 0
+            subviewStack.append((absLeft, absTop, w, h))
 
             // Subview background image → add as WMSImage
             if let bg = a["backgroundimage"], !bg.isEmpty {
@@ -231,6 +240,9 @@ final class WMSParser: NSObject, XMLParserDelegate {
             btn.action     = tag == "PAUSEBUTTON"
                 ? "pause"
                 : extractAction(a["onclick"] ?? a["onmouseup"] ?? "")
+            btn.clipWidth  = currentClip.width
+            btn.clipHeight = currentClip.height
+            btn.visible    = (a["visible"] ?? "true").lowercased() != "false"
             currentView!.standaloneButtons.append(btn)
 
         // ── Sliders ───────────────────────────────────────────────────────────

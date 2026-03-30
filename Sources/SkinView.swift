@@ -175,13 +175,30 @@ final class SkinView: NSView {
     // MARK: - Standalone Button Rendering
 
     private func renderStandaloneButton(_ btn: WMSStandaloneButton) {
-        guard btn.action != "unknown" else { return }
-        guard !btn.image.isEmpty, let upImg = loadImage(btn.image) else { return }
+        guard btn.visible, btn.action != "unknown" else { return }
+        guard !btn.image.isEmpty, var upImg = loadImage(btn.image) else { return }
+
+        // If the button lives inside a subview with explicit dimensions that are
+        // smaller than the image, crop to that clip rect (e.g. digit sprite sheets).
+        var displaySize = upImg.size
+        if btn.clipWidth > 0 && CGFloat(btn.clipWidth) < upImg.size.width {
+            let clip = CGRect(x: 0, y: 0,
+                              width: CGFloat(btn.clipWidth),
+                              height: btn.clipHeight > 0 ? CGFloat(btn.clipHeight) : upImg.size.height)
+            upImg = cropImage(upImg, to: clip)
+            displaySize = clip.size
+        }
+
         let frame = CGRect(x: CGFloat(btn.left), y: CGFloat(btn.top),
-                           width: upImg.size.width, height: upImg.size.height)
-        let downImg = loadImage(btn.downImage)
-        let button  = makeButton(frame: frame, action: btn.action,
-                                 tooltip: btn.tooltip, up: upImg, down: downImg)
+                           width: displaySize.width, height: displaySize.height)
+        let downImg = loadImage(btn.downImage).map {
+            btn.clipWidth > 0 && CGFloat(btn.clipWidth) < $0.size.width
+                ? cropImage($0, to: CGRect(x: 0, y: 0, width: CGFloat(btn.clipWidth),
+                                           height: displaySize.height))
+                : $0
+        }
+        let button = makeButton(frame: frame, action: btn.action,
+                                tooltip: btn.tooltip, up: upImg, down: downImg)
         addSubview(button)
         interactiveSubviews.append(button)
     }

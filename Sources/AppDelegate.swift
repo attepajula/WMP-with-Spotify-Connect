@@ -109,7 +109,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let win = NSWindow(
             contentRect: NSRect(origin: .zero, size: skinView.frame.size),
-            styleMask:   [],
+            styleMask:   [.miniaturizable],
             backing:     .buffered,
             defer:       false
         )
